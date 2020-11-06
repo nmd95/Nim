@@ -2,7 +2,7 @@
 import socket
 import sys
 import struct
-blabla
+
 CLIENT_SEND_FORMAT = '>iiii'
 CLIENT_REC_FORMAT = '>iiiiiii'
 PAD = -3
