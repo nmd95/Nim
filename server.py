@@ -4,7 +4,6 @@ import sys
 import struct
 import copy
 
-
 SERVER_SEND_FORMAT = '>iiiiiii'
 SERVER_REC_FORMAT = '>iiii'
 PAD = -3
@@ -16,19 +15,24 @@ buff_log = 5
 BAD_INPUT = -100
 
 
+def my_sendall(sock, data):
+    if len(data) == 0:
+        return None
+    ret = sock.send(data)
+    return my_sendall(sock, data[ret:])
+
+
 def send_heaps(socket, heaps, accepted, win):
     send_msg = [START, accepted, heaps[0], heaps[1], heaps[2], win, END]
 
     send_msg = [int(e) for e in send_msg]
     try:
-        socket.sendall(
-            struct.pack(SERVER_SEND_FORMAT, send_msg[0], send_msg[1], send_msg[2], send_msg[3], send_msg[4],
-                        send_msg[5],
-                        send_msg[6]))
+        my_sendall(socket,
+                   struct.pack(SERVER_SEND_FORMAT, send_msg[0], send_msg[1], send_msg[2], send_msg[3], send_msg[4],
+                               send_msg[5], send_msg[6]))
     except socket.error as exc:
         print("An error occurred: %s\n" % exc)
         sys.exit()
-
 
 
 def fill_buff(sock):  # also: return 1 if connection is terminated, and 0 otherwise.\
@@ -76,8 +80,9 @@ def main(port, heaps):
     listening_socket.bind(('', port))
     listening_socket.listen(buff_log)
     while True:
+        print('Server: listening %s:%s' % ('localhost', port,))
         client_socket, address = listening_socket.accept()
-        print("Connection from %s has been established!", address)
+        print('Connection from %s : %s has been established!' % (address, port))
         local_heaps = copy.deepcopy(heaps)
         send_heaps(client_socket, local_heaps, PAD, 2)
         while True:
@@ -117,5 +122,4 @@ if __name__ == '__main__':
     heaps = [int(na), int(nb), int(nc)]
     port = 6444 if (len(sys.argv) < 5) else sys.argv[4]
     port = int(port)
-    print(port)
     main(port, heaps)

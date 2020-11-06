@@ -12,6 +12,12 @@ EOF_LIKE = b''
 max_bandwidth = 10000
 BAD_INPUT = -100
 
+def my_sendall(sock, data):
+    if len(data) == 0:
+        return None
+    ret = sock.send(data)
+    return my_sendall(sock, data[ret:])
+
 
 def show_heaps(rec_msg):  # also: returns 0 in case game is over, 1 otherwise.
 
@@ -84,9 +90,8 @@ def send_command(socket):
     send_msg[1] = abc.index(heap) if is_legal else BAD_INPUT
     send_msg[2] = amount if is_legal else BAD_INPUT
     try:
-        socket.sendall(
-            struct.pack(CLIENT_SEND_FORMAT, int(send_msg[0]), int(send_msg[1]), int(send_msg[2]), int(send_msg[3])))
-
+        my_sendall(socket,
+                   struct.pack(CLIENT_SEND_FORMAT, int(send_msg[0]), int(send_msg[1]), int(send_msg[2]),int(send_msg[3])))
     except socket.error as exc:
         print("An error occurred: %s\n" % exc)
         sys.exit()
@@ -114,7 +119,7 @@ if __name__ == '__main__':
     hostname, port = "", 0
     if len(sys.argv) < 2:
         hostname = socket.gethostname()
-        print(hostname)
+        #print(hostname)
         port = 6444
     if len(sys.argv) == 2:
         hostname = sys.argv[1]
@@ -123,7 +128,5 @@ if __name__ == '__main__':
         hostname, port = socket.gethostbyname((sys.argv[1])), sys.argv[2]
 
     port = int(port)
-    print(hostname)
-    print(port)
 
     main(hostname, port)
