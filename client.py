@@ -75,7 +75,6 @@ def send_command(socket):
     if len(user_input) == 1 and user_input[0] == 'Q':
         terminate(socket)
     if len(user_input) <= 1 or len(user_input) > 2:
-        print("Bad input\n")
         is_legal = False
     if is_legal:
         heap = user_input[0]
